@@ -18,7 +18,31 @@
 #   - 输入非数字或超出范围时，程序会提示错误并重新要求输入。
 #   - 支持 Ctrl+C 或 Ctrl+D 中断程序。
 
+import json
 import sys
+from pathlib import Path
+
+# 数据文件路径（桌面）
+DATA_FILE = Path.home() / "Desktop" / "todo_data.json"
+
+def load_tasks() -> list:
+    """从 JSON 文件加载任务列表，如果文件不存在则返回空列表。"""
+    if DATA_FILE.exists():
+        try:
+            with open(DATA_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except (json.JSONDecodeError, IOError):
+            # 文件损坏或无法读取，返回空列表
+            return []
+    return []
+
+def save_tasks(todo_list: list) -> None:
+    """将任务列表保存到 JSON 文件。"""
+    try:
+        with open(DATA_FILE, "w", encoding="utf-8") as f:
+            json.dump(todo_list, f, ensure_ascii=False, indent=2)
+    except IOError as e:
+        print(f"⚠️ 保存任务时出错：{e}")
 
 def get_int_input(prompt: str, min_val: int, max_val: int) -> int:
     """循环获取整数输入，直到输入有效范围内的整数。"""
@@ -38,7 +62,11 @@ def get_int_input(prompt: str, min_val: int, max_val: int) -> int:
 
 def main():
     # 用列表存储任务，每个任务是字典，包含内容和状态
-    todo_list = []
+    todo_list = load_tasks()
+    if todo_list:
+        print(f"📂 已加载 {len(todo_list)} 个任务。")
+    else:
+        print("📭 没有找到已保存的任务，开始新的清单。")
 
     try:
         while True:
@@ -58,6 +86,7 @@ def main():
             if choice == "1":
                 task = input("请输入要添加的任务内容：")
                 todo_list.append({"内容": task, "已完成": False})
+                save_tasks(todo_list)
                 print(f"✅ 已添加任务：{task}")
 
             # 选项2：查看所有任务
@@ -77,6 +106,7 @@ def main():
                     continue
                 num = get_int_input("请输入要标记的任务编号：", 1, len(todo_list))
                 todo_list[num-1]["已完成"] = True
+                save_tasks(todo_list)
                 print(f"✅ 已将任务 {num} 标记为已完成！")
 
             # 选项4：删除任务
@@ -86,6 +116,7 @@ def main():
                     continue
                 num = get_int_input("请输入要删除的任务编号：", 1, len(todo_list))
                 deleted_task = todo_list.pop(num-1)
+                save_tasks(todo_list)
                 print(f"🗑️ 已删除任务：{deleted_task['内容']}")
 
             # 选项5：退出程序
