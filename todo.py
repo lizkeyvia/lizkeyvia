@@ -22,11 +22,11 @@ import json
 import sys
 from pathlib import Path
 
-# 数据文件路径（桌面）
-DATA_FILE = Path.home() / "Desktop" / "todo_data.json"
+# 数据文件路径（当前目录）
+DATA_FILE = Path.cwd() / "todo_data.json"
 
 def load_tasks() -> list:
-    """从 JSON 文件加载任务列表，如果文件不存在则返回空列表。"""
+    """从当前目录下的 JSON 文件加载任务列表，如果文件不存在则返回空列表。"""
     if DATA_FILE.exists():
         try:
             with open(DATA_FILE, "r", encoding="utf-8") as f:
@@ -37,7 +37,7 @@ def load_tasks() -> list:
     return []
 
 def save_tasks(todo_list: list) -> None:
-    """将任务列表保存到 JSON 文件。"""
+    """将任务列表保存到当前目录下的 JSON 文件。"""
     try:
         with open(DATA_FILE, "w", encoding="utf-8") as f:
             json.dump(todo_list, f, ensure_ascii=False, indent=2)
